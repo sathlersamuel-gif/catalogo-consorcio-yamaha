@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-labelledby="title desc">
+  <title id="title">Foto da moto ainda não cadastrada</title>
+  <desc id="desc">Espaço reservado para a foto da motocicleta Yamaha.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#061b3d"/>
+      <stop offset="1" stop-color="#0057b8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <circle cx="455" cy="590" r="105" fill="none" stroke="#fff" stroke-width="28" opacity=".92"/>
+  <circle cx="795" cy="590" r="105" fill="none" stroke="#fff" stroke-width="28" opacity=".92"/>
+  <path d="M455 590l130-185h155l55 185M585 405l-75-78h-92m167 78l-68 185h278M690 405l82-64h88" fill="none" stroke="#e31937" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="600" y="760" text-anchor="middle" fill="#fff" font-family="Arial, sans-serif" font-size="42" font-weight="700">ADICIONE AS FOTOS PELO PAINEL</text>
+</svg>

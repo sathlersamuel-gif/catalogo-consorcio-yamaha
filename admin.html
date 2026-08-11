@@ -1,1 +1,30 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Administrador | Yamaha Consórcio</title><link rel="stylesheet" href="style.css"></head><body><header class="top"><div class="brand"><div class="mark">Y</div><span>YAMAHA • CONSÓRCIO</span></div><button id="adminBtn" class="admin-toggle">Administrador</button></header><div id="clientApp"><main class="wrap"><section class="hero"><div><h1>Área Administrativa</h1><p>Gerencie categorias, motos, descrições, fotos, planos e configurações do catálogo.</p><button class="btn primary" onclick="document.getElementById('adminBtn').click()">Entrar no painel</button></div><div class="bike-emoji">⚙️</div></section><section id="catalogo"><div class="section-title"><h2>Categorias</h2></div><div id="categories" class="grid cats"></div><div class="section-title"><h2 id="motosTitle">Motos</h2></div><div id="motos" class="grid motos"></div></section></main></div><div id="detailApp" class="hidden"></div><div id="adminApp" class="hidden"></div><div id="modalRoot"></div><div id="toast" class="toast"></div><script src="app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#061b3d">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Administrador | Yamaha Consórcio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="admin-body">
+  <header class="top">
+    <a class="brand" href="admin.html" aria-label="Início do painel">
+      <span class="mark" aria-hidden="true">Y</span>
+      <span>YAMAHA <b>•</b> ADMINISTRADOR</span>
+    </a>
+    <a class="admin-link" href="index.html" target="_blank" rel="noopener">Ver como cliente ↗</a>
+  </header>
+
+  <div id="adminRoot" aria-live="polite">
+    <main class="wrap loading-page"><div class="spinner" aria-hidden="true"></div><p>Carregando painel…</p></main>
+  </div>
+  <div id="modalRoot"></div>
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="config.js"></script>
+  <script src="api.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
