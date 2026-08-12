@@ -1,0 +1,28 @@
+name: Verificar ajuste de analytics
+
+on:
+  push:
+    branches:
+      - analytics-admin-2026-08-12-work
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Validar sistema existente
+        run: npm run check
+      - name: Validar novos scripts
+        run: |
+          node --check client-analytics.js
+          node --check admin-analytics.js
+          grep -q 'client-analytics.js' index.html
+          grep -q 'admin-analytics.js' admin.html
