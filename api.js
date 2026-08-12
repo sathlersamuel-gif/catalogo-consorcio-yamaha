@@ -104,7 +104,7 @@
     if (!isConfigured) return structuredClone(window.CATALOG_SEED || { settings: {}, categories: [], motos: [], photos: [], plans: [], leads: [] });
     const visible = admin ? '' : '&active=eq.true';
     const [settings, categories, motos, photos, plans, leads] = await Promise.all([
-      list('catalog_settings', 'select=id,seller_name,whatsapp&limit=1', admin),
+      list('catalog_settings', 'select=id,seller_name,whatsapp&limit=1', false),
       list('categories', `select=*&order=sort_order.asc,name.asc${visible}`, admin),
       list('motos', `select=*&order=sort_order.asc,name.asc${visible}`, admin),
       list('moto_photos', 'select=*&order=sort_order.asc', admin),
