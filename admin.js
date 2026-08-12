@@ -78,7 +78,7 @@
         <h2>Entrar no painel</h2>
         <p class="muted">Digite seu PIN ou senha administrativa.</p>
         <form id="loginForm">
-          <label class="field"><span>PIN / senha</span><input name="password" type="password" minlength="6" autocomplete="current-password" inputmode="text" placeholder="Digite sua senha" required></label>
+          <label class="field"><span>PIN / senha</span><input name="password" type="password" minlength="6" autocomplete="current-password" placeholder="Digite sua senha" required></label>
           <button class="btn primary full" type="submit">Entrar</button>
         </form>
       </section>
@@ -161,7 +161,7 @@
         <div class="form-grid">
           <label class="field"><span>Nome do vendedor</span><input name="seller_name" value="${escapeHtml(data.settings.seller_name || '')}" required></label>
           <label class="field"><span>WhatsApp com DDI + DDD</span><input name="whatsapp" value="${escapeHtml(data.settings.whatsapp || '')}" inputmode="tel" placeholder="5569999999999" required><small>Somente números. Exemplo: 55 + DDD + telefone.</small></label>
-          <label class="field full"><span>Novo PIN / senha</span><input name="password" type="password" minlength="6" autocomplete="new-password" inputmode="text" placeholder="Deixe vazio para não alterar"><small>Use pelo menos 6 caracteres. Não use sequências fáceis.</small></label>
+          <label class="field full"><span>Novo PIN / senha</span><input name="password" type="password" minlength="6" autocomplete="new-password" placeholder="Deixe vazio para não alterar"><small>Use pelo menos 6 caracteres. Não use sequências fáceis.</small></label>
         </div>
         <button class="btn primary" type="submit">Salvar configurações</button>
       </form>`;
