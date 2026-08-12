@@ -39,7 +39,6 @@
       keepalive: true,
       headers: {
         apikey: publishableKey,
-        Authorization: `Bearer ${publishableKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
