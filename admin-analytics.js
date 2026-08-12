@@ -8,9 +8,14 @@
 
   let metrics = null;
   let loading = false;
+  let renderScheduled = false;
 
   function number(value) {
     return Number(value || 0).toLocaleString('pt-BR');
+  }
+
+  function setTextIfChanged(element, value) {
+    if (element && element.textContent !== value) element.textContent = value;
   }
 
   function renderMetrics() {
@@ -26,7 +31,7 @@
       views.innerHTML = '<span class="stat-icon blue-bg">◉</span><span class="muted">Acessos à página</span><strong>0</strong>';
       stats.appendChild(views);
     }
-    views.querySelector('strong').textContent = number(metrics.page_views);
+    setTextIfChanged(views.querySelector('strong'), number(metrics.page_views));
 
     let clicks = stats.querySelector('[data-analytics="whatsapp-clicks"]');
     if (!clicks) {
@@ -36,7 +41,7 @@
       clicks.innerHTML = '<span class="stat-icon green-bg">↗</span><span class="muted">Cliques no WhatsApp</span><strong>0</strong>';
       stats.appendChild(clicks);
     }
-    clicks.querySelector('strong').textContent = number(metrics.whatsapp_clicks);
+    setTextIfChanged(clicks.querySelector('strong'), number(metrics.whatsapp_clicks));
   }
 
   async function loadMetrics() {
@@ -62,12 +67,18 @@
     }
   }
 
-  const observer = new MutationObserver(() => {
-    if (!document.querySelector('#adminContent .grid.stats')) return;
-    if (metrics) renderMetrics();
-    else loadMetrics();
-  });
+  function scheduleRender() {
+    if (renderScheduled) return;
+    renderScheduled = true;
+    queueMicrotask(() => {
+      renderScheduled = false;
+      if (!document.querySelector('#adminContent .grid.stats')) return;
+      if (metrics) renderMetrics();
+      else loadMetrics();
+    });
+  }
 
+  const observer = new MutationObserver(scheduleRender);
   observer.observe(root, { childList: true, subtree: true });
   loadMetrics();
 })();
