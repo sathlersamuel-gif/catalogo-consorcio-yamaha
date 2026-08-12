@@ -1,0 +1,197 @@
+name: Gerar backup completo do catalogo
+
+on:
+  push:
+    branches:
+      - backup-2026-08-12-1441
+    paths:
+      - '.github/workflows/backup-package.yml'
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_URL: https://lqrrcrmmwnqfrzmubfjd.supabase.co
+  SUPABASE_KEY: sb_publishable_31KuptLJA9v9kj8syzfEQA_liowmMfI
+  BACKUP_NAME: Catalogo-Consorcio-Yamaha-BACKUP-COMPLETO-2026-08-12_1441
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar codigo do snapshot
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Montar pacote completo
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT="/tmp/${BACKUP_NAME}"
+          mkdir -p "$ROOT/source" "$ROOT/database/data" "$ROOT/storage" "$ROOT/metadata"
+
+          # Copia somente o codigo funcional do projeto, sem os arquivos auxiliares usados para gerar este backup.
+          tar \
+            --exclude='./.git' \
+            --exclude='./backup_snapshot' \
+            --exclude='./.github/workflows/backup-package.yml' \
+            -cf - . | tar -xf - -C "$ROOT/source"
+
+          cp supabase-schema.sql "$ROOT/database/supabase-schema.sql"
+          cp backup_snapshot/leads.json "$ROOT/database/data/leads.json"
+          cp backup_snapshot/auth-users-metadata.json "$ROOT/database/auth-users-metadata.json"
+          cp backup_snapshot/README-BACKUP.txt "$ROOT/README-BACKUP.txt"
+
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import pathlib
+          import urllib.parse
+          import urllib.request
+
+          url = os.environ['SUPABASE_URL'].rstrip('/')
+          key = os.environ['SUPABASE_KEY']
+          backup_name = os.environ['BACKUP_NAME']
+          root = pathlib.Path('/tmp') / backup_name
+
+          headers = {
+              'apikey': key,
+              'Authorization': f'Bearer {key}',
+              'Content-Type': 'application/json',
+          }
+
+          def request_json(method, endpoint, payload=None):
+              data = None if payload is None else json.dumps(payload).encode('utf-8')
+              req = urllib.request.Request(endpoint, data=data, headers=headers, method=method)
+              with urllib.request.urlopen(req, timeout=60) as response:
+                  return json.loads(response.read().decode('utf-8'))
+
+          def request_bytes(endpoint):
+              req = urllib.request.Request(endpoint, headers={'apikey': key, 'Authorization': f'Bearer {key}'})
+              with urllib.request.urlopen(req, timeout=120) as response:
+                  return response.read()
+
+          expected_counts = {
+              'catalog_settings': 1,
+              'categories': 5,
+              'moto_photos': 37,
+              'motos': 8,
+              'outboard_motor_photos': 0,
+              'outboard_motor_plans': 0,
+              'outboard_motors': 10,
+              'plans': 43,
+              'leads': 2,
+          }
+
+          public_tables = [
+              'catalog_settings',
+              'categories',
+              'moto_photos',
+              'motos',
+              'outboard_motor_photos',
+              'outboard_motor_plans',
+              'outboard_motors',
+              'plans',
+          ]
+
+          counts = {'leads': expected_counts['leads']}
+          data_dir = root / 'database' / 'data'
+          for table in public_tables:
+              endpoint = f"{url}/rest/v1/{table}?select=*"
+              rows = request_json('GET', endpoint)
+              counts[table] = len(rows)
+              with (data_dir / f'{table}.json').open('w', encoding='utf-8') as f:
+                  json.dump(rows, f, ensure_ascii=False, indent=2)
+                  f.write('\n')
+
+          for table, expected in expected_counts.items():
+              actual = counts.get(table)
+              if actual != expected:
+                  raise RuntimeError(f'Contagem divergente em {table}: esperado {expected}, obtido {actual}')
+
+          def list_objects(bucket, prefix=''):
+              endpoint = f"{url}/storage/v1/object/list/{urllib.parse.quote(bucket, safe='')}"
+              payload = {
+                  'prefix': prefix,
+                  'limit': 1000,
+                  'offset': 0,
+                  'sortBy': {'column': 'name', 'order': 'asc'},
+              }
+              items = request_json('POST', endpoint, payload)
+              found = []
+              for item in items:
+                  name = item.get('name', '')
+                  if not name:
+                      continue
+                  path = f"{prefix}/{name}" if prefix else name
+                  # Pastas retornam sem id/metadata; arquivos têm metadados.
+                  if item.get('id') is None and not item.get('metadata'):
+                      found.extend(list_objects(bucket, path))
+                  else:
+                      entry = dict(item)
+                      entry['bucket_id'] = bucket
+                      entry['path'] = path
+                      found.append(entry)
+              return found
+
+          all_objects = []
+          for bucket in ['motorcycle-images', 'outboard-motor-images']:
+              objects = list_objects(bucket)
+              for obj in objects:
+                  path = obj['path']
+                  public_path = urllib.parse.quote(path, safe='/')
+                  endpoint = f"{url}/storage/v1/object/public/{urllib.parse.quote(bucket, safe='')}/{public_path}"
+                  content = request_bytes(endpoint)
+                  destination = root / 'storage' / bucket / path
+                  destination.parent.mkdir(parents=True, exist_ok=True)
+                  destination.write_bytes(content)
+                  obj['downloaded_size'] = len(content)
+                  obj['sha256'] = hashlib.sha256(content).hexdigest()
+              all_objects.extend(objects)
+
+          if len(all_objects) != 38:
+              raise RuntimeError(f'Contagem divergente no Storage: esperado 38, obtido {len(all_objects)}')
+
+          with (root / 'storage' / 'objects.json').open('w', encoding='utf-8') as f:
+              json.dump(all_objects, f, ensure_ascii=False, indent=2, default=str)
+              f.write('\n')
+
+          manifest = {
+              'backup_name': backup_name,
+              'snapshot_reference_local': '2026-08-12 14:41 America/Porto_Velho',
+              'source_commit': '3d4b06ab3d3d0d830d9057b36b0881544afd7ec5',
+              'source_repository': 'sathlersamuel-gif/catalogo-consorcio-yamaha',
+              'supabase_project_id': 'lqrrcrmmwnqfrzmubfjd',
+              'database_counts': counts,
+              'storage_object_count': len(all_objects),
+              'security_note': 'Passwords and password hashes are intentionally not exported.',
+          }
+          with (root / 'metadata' / 'manifest.json').open('w', encoding='utf-8') as f:
+              json.dump(manifest, f, ensure_ascii=False, indent=2)
+              f.write('\n')
+
+          restore = '''RESTAURAÇÃO — CATÁLOGO CONSÓRCIO YAMAHA\n\n1. O diretório source contém o código funcional completo do catálogo e painel administrativo.\n2. O arquivo database/supabase-schema.sql recria a estrutura, políticas e funções do Supabase.\n3. database/data contém os dados salvos em JSON por tabela, inclusive leads.\n4. storage contém cópias físicas das imagens, preservando os mesmos caminhos dos buckets.\n5. database/auth-users-metadata.json registra a conta administrativa sem exportar senha/hash. Em um Supabase novo, recrie a conta administrativa ou redefina a senha.\n6. metadata/manifest.json registra a origem e as contagens conferidas.\n\nEste pacote foi gerado sem alterar a branch main nem os dados de produção.\n'''
+          (root / 'README-RESTAURACAO.txt').write_text(restore, encoding='utf-8')
+
+          checksums = []
+          for path in sorted(p for p in root.rglob('*') if p.is_file()):
+              digest = hashlib.sha256(path.read_bytes()).hexdigest()
+              checksums.append(f"{digest}  {path.relative_to(root).as_posix()}")
+          (root / 'metadata' / 'SHA256SUMS.txt').write_text('\n'.join(checksums) + '\n', encoding='utf-8')
+          PY
+
+          cd /tmp
+          zip -qr "${BACKUP_NAME}.zip" "${BACKUP_NAME}"
+          sha256sum "${BACKUP_NAME}.zip" > "${BACKUP_NAME}.zip.sha256"
+
+      - name: Enviar arquivo de backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-completo-catalogo-yamaha-2026-08-12
+          path: |
+            /tmp/${{ env.BACKUP_NAME }}.zip
+            /tmp/${{ env.BACKUP_NAME }}.zip.sha256
+          if-no-files-found: error
+          retention-days: 30
