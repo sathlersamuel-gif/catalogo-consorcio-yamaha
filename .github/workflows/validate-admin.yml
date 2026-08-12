@@ -21,7 +21,15 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Check restored admin syntax
-        run: node --check admin-restored.js
+      - name: Check admin scripts syntax
+        run: |
+          node --check admin.js
+          node --check admin-restored.js
+          node --check admin-legacy-features.js
+          node --check admin-analytics.js
+      - name: Check client tracking syntax
+        run: |
+          node --check client.js
+          node --check client-analytics.js
       - name: Run existing tests
         run: npm test
