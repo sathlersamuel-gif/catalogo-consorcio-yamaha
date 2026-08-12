@@ -3,6 +3,6 @@ window.CATALOG_CONFIG = Object.freeze({
   supabasePublishableKey: 'sb_publishable_31KuptLJA9v9kj8syzfEQA_liowmMfI',
   // Compatibilidade com projetos Supabase antigos.
   supabaseAnonKey: '',
-  adminEmail: 'admin@samuel-yamaha.com.br',
+  adminEmail: 'sathlersamuel@gmail.com',
   storageBucket: 'motorcycle-images',
 });
