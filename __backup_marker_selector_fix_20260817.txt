@@ -1,0 +1,1 @@
+Backup marker before definitive selector isolation fix. State preserved by existing branch backup-antes-ajuste-final-seletor-carrossel-20260817 and repository history.
