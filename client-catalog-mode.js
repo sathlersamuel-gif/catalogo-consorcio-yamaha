@@ -1,6 +1,7 @@
 (function restoreCatalogSelector() {
   const app = document.getElementById('app');
-  if (!app) return;
+  const selector = document.querySelector('[data-catalog-mode-switch]');
+  if (!app || !selector) return;
 
   let mode = 'motos';
   let applying = false;
@@ -10,19 +11,17 @@
     const style = document.createElement('style');
     style.id = 'catalog-mode-style';
     style.textContent = `
+      #catalogModeBar { padding-top: 16px; padding-bottom: 0; }
       .catalog-mode-switch {
         display: flex;
         gap: 10px;
         margin: 0 0 18px;
         flex-wrap: wrap;
       }
-      .catalog-mode-switch .btn {
-        min-width: 150px;
-      }
-      .catalog-mode-switch .btn.is-active {
-        pointer-events: none;
-      }
+      .catalog-mode-switch .btn { min-width: 170px; }
+      .catalog-mode-switch .btn.is-active { pointer-events: none; }
       @media (max-width: 640px) {
+        #catalogModeBar { padding-top: 12px; }
         .catalog-mode-switch {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -31,25 +30,12 @@
         .catalog-mode-switch .btn {
           min-width: 0;
           width: 100%;
+          padding-left: 8px;
+          padding-right: 8px;
         }
       }
     `;
     document.head.appendChild(style);
-  }
-
-  function ensureSelector(catalog) {
-    let selector = catalog.querySelector(':scope > [data-catalog-mode-switch]');
-    if (selector) return selector;
-
-    selector = document.createElement('div');
-    selector.className = 'catalog-mode-switch';
-    selector.dataset.catalogModeSwitch = 'true';
-    selector.innerHTML = `
-      <button type="button" class="btn primary is-active" data-catalog-mode="motos">🏍️ Motos</button>
-      <button type="button" class="btn ghost" data-catalog-mode="motores">⚓ Motores de Popa</button>
-    `;
-    catalog.prepend(selector);
-    return selector;
   }
 
   function applyMode() {
@@ -57,19 +43,7 @@
     applying = true;
     try {
       const catalog = app.querySelector('#catalogo');
-      if (!catalog) return;
       installStyles();
-      const selector = ensureSelector(catalog);
-      const outboard = catalog.querySelector(':scope > [data-outboard-section]');
-
-      Array.from(catalog.children).forEach((child) => {
-        if (child === selector) return;
-        if (child === outboard) {
-          child.hidden = mode !== 'motores';
-          return;
-        }
-        child.hidden = mode !== 'motos';
-      });
 
       selector.querySelectorAll('[data-catalog-mode]').forEach((button) => {
         const active = button.dataset.catalogMode === mode;
@@ -78,12 +52,23 @@
         button.classList.toggle('ghost', !active);
         button.setAttribute('aria-pressed', String(active));
       });
+
+      if (!catalog) return;
+      const outboard = catalog.querySelector(':scope > [data-outboard-section]');
+
+      Array.from(catalog.children).forEach((child) => {
+        if (child === outboard) {
+          child.hidden = mode !== 'motores';
+        } else {
+          child.hidden = mode !== 'motos';
+        }
+      });
     } finally {
       applying = false;
     }
   }
 
-  app.addEventListener('click', (event) => {
+  selector.addEventListener('click', (event) => {
     const button = event.target.closest('[data-catalog-mode]');
     if (!button) return;
     event.preventDefault();
