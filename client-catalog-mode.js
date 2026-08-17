@@ -12,27 +12,13 @@
     style.id = 'catalog-mode-style';
     style.textContent = `
       #catalogModeBar { padding-top: 16px; padding-bottom: 0; }
-      .catalog-mode-switch {
-        display: flex;
-        gap: 10px;
-        margin: 0 0 18px;
-        flex-wrap: wrap;
-      }
-      .catalog-mode-switch .btn { min-width: 170px; }
-      .catalog-mode-switch .btn.is-active { pointer-events: none; }
-      @media (max-width: 640px) {
-        #catalogModeBar { padding-top: 12px; }
-        .catalog-mode-switch {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 8px;
-        }
-        .catalog-mode-switch .btn {
-          min-width: 0;
-          width: 100%;
-          padding-left: 8px;
-          padding-right: 8px;
-        }
+      .catalog-mode-switch { display:flex; gap:10px; margin:0 0 18px; flex-wrap:wrap; }
+      .catalog-mode-switch .btn { min-width:170px; }
+      .catalog-mode-switch .btn.is-active { pointer-events:none; }
+      @media (max-width:640px) {
+        #catalogModeBar { padding-top:12px; }
+        .catalog-mode-switch { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+        .catalog-mode-switch .btn { min-width:0; width:100%; padding-left:8px; padding-right:8px; }
       }
     `;
     document.head.appendChild(style);
@@ -42,9 +28,7 @@
     if (applying) return;
     applying = true;
     try {
-      const catalog = app.querySelector('#catalogo');
       installStyles();
-
       selector.querySelectorAll('[data-catalog-mode]').forEach((button) => {
         const active = button.dataset.catalogMode === mode;
         button.classList.toggle('is-active', active);
@@ -53,15 +37,15 @@
         button.setAttribute('aria-pressed', String(active));
       });
 
+      const carousel = app.querySelector('[data-yamaha-carousel]');
+      if (carousel) carousel.hidden = mode !== 'motos';
+
+      const catalog = app.querySelector('#catalogo');
       if (!catalog) return;
       const outboard = catalog.querySelector(':scope > [data-outboard-section]');
 
       Array.from(catalog.children).forEach((child) => {
-        if (child === outboard) {
-          child.hidden = mode !== 'motores';
-        } else {
-          child.hidden = mode !== 'motos';
-        }
+        child.hidden = child === outboard ? mode !== 'motores' : mode !== 'motos';
       });
     } finally {
       applying = false;
@@ -74,10 +58,10 @@
     event.preventDefault();
     mode = button.dataset.catalogMode === 'motores' ? 'motores' : 'motos';
     applyMode();
-    app.querySelector('#catalogo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    app.querySelector('#catalogo')?.scrollIntoView({ behavior:'smooth', block:'start' });
   });
 
   const observer = new MutationObserver(() => queueMicrotask(applyMode));
-  observer.observe(app, { childList: true, subtree: true });
+  observer.observe(app, { childList:true, subtree:true });
   applyMode();
 })();
