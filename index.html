@@ -7,8 +7,23 @@
   <meta name="description" content="Catálogo Yamaha com motos, fotos e planos de consórcio.">
   <title>Yamaha Rolim de Moura | Consórcio</title>
   <link rel="stylesheet" href="style.css">
+  <style id="catalog-mode-critical-style">
+    #catalogModeBar { padding-top:16px; padding-bottom:0; }
+    .catalog-mode-switch { display:flex; gap:10px; margin:0 0 18px; flex-wrap:wrap; }
+    .catalog-mode-switch .btn { min-width:170px; }
+    .catalog-mode-switch .btn.is-active { pointer-events:none; }
+    body[data-catalog-mode="motos"] [data-outboard-section] { display:none !important; }
+    body[data-catalog-mode="motores"] #catalogo > :not([data-outboard-section]) { display:none !important; }
+    body[data-catalog-mode="motores"] [data-yamaha-carousel] { display:none !important; }
+    body[data-catalog-mode="motores"] [data-outboard-section] { display:block !important; }
+    @media (max-width:640px) {
+      #catalogModeBar { padding-top:12px; }
+      .catalog-mode-switch { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+      .catalog-mode-switch .btn { min-width:0; width:100%; padding-left:8px; padding-right:8px; }
+    }
+  </style>
 </head>
-<body>
+<body data-catalog-mode="motos">
   <header class="top">
     <a class="brand" href="#inicio" aria-label="Início do catálogo">
       <span class="mark" aria-hidden="true">Y</span>
@@ -39,8 +54,66 @@
   <script src="client.js"></script>
   <script src="client-carousel.js?v=20260817-2015"></script>
   <script src="client-outboard.js?v=20260817-1945"></script>
-  <script src="client-catalog-mode.js?v=20260817-2030"></script>
   <script src="client-detail-enhancements.js?v=20260817-1740"></script>
   <script src="client-analytics.js?v=20260812-1758"></script>
+  <script>
+    (function definitiveCatalogModeSelector() {
+      const app = document.getElementById('app');
+      const selector = document.querySelector('[data-catalog-mode-switch]');
+      if (!app || !selector) return;
+
+      let mode = 'motos';
+      let scheduled = false;
+
+      function setVisible(element, visible) {
+        if (!element) return;
+        if (visible) element.style.removeProperty('display');
+        else element.style.setProperty('display', 'none', 'important');
+      }
+
+      function enforceMode() {
+        scheduled = false;
+        document.body.dataset.catalogMode = mode;
+
+        selector.querySelectorAll('[data-catalog-mode]').forEach((button) => {
+          const active = button.dataset.catalogMode === mode;
+          button.classList.toggle('is-active', active);
+          button.classList.toggle('primary', active);
+          button.classList.toggle('ghost', !active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+
+        const catalog = app.querySelector('#catalogo');
+        if (catalog) {
+          Array.from(catalog.children).forEach((child) => {
+            const isOutboard = child.hasAttribute('data-outboard-section');
+            if (isOutboard) setVisible(child, mode === 'motores');
+            else setVisible(child, mode === 'motos');
+          });
+        }
+
+        app.querySelectorAll('[data-outboard-section]').forEach((section) => setVisible(section, mode === 'motores'));
+        app.querySelectorAll('[data-yamaha-carousel]').forEach((carousel) => setVisible(carousel, mode === 'motos'));
+      }
+
+      function scheduleEnforce() {
+        if (scheduled) return;
+        scheduled = true;
+        queueMicrotask(enforceMode);
+      }
+
+      selector.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-catalog-mode]');
+        if (!button) return;
+        event.preventDefault();
+        mode = button.dataset.catalogMode === 'motores' ? 'motores' : 'motos';
+        enforceMode();
+        app.querySelector('#catalogo')?.scrollIntoView({ behavior:'smooth', block:'start' });
+      });
+
+      new MutationObserver(scheduleEnforce).observe(app, { childList:true, subtree:true });
+      enforceMode();
+    })();
+  </script>
 </body>
 </html>
