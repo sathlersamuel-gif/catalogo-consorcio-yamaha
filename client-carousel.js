@@ -23,8 +23,8 @@
       .yamaha-carousel-slide{position:absolute;inset:0;opacity:0;transition:opacity .45s ease;pointer-events:none;border:0;padding:0;background:transparent;width:100%;height:100%}
       .yamaha-carousel-slide.active{opacity:1;pointer-events:auto}
       .yamaha-carousel-slide img{width:100%;height:100%;object-fit:cover;display:block}
-      .yamaha-carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:62px;height:112px;border-radius:30px;border:2px solid rgba(81,151,239,.55);background:#061a3e;color:#fff;font-size:54px;line-height:1;cursor:pointer}
-      .yamaha-carousel-arrow.prev{left:18px}.yamaha-carousel-arrow.next{right:18px}
+      .yamaha-carousel-arrow{position:absolute;top:0;bottom:0;z-index:4;width:18%;border:0;background:transparent;color:transparent;font-size:0;cursor:pointer;opacity:0}
+      .yamaha-carousel-arrow.prev{left:0}.yamaha-carousel-arrow.next{right:0}
       .yamaha-carousel-dots{display:flex;justify-content:center;gap:22px;margin-top:30px}
       .yamaha-carousel-dot{width:31px;height:31px;border-radius:50%;border:4px solid #4ba0fb;background:transparent;padding:0;cursor:pointer}
       .yamaha-carousel-dot.active{background:#2c96ff;box-shadow:0 0 0 8px rgba(44,150,255,.22)}
@@ -33,8 +33,7 @@
         .yamaha-line-carousel h2{letter-spacing:.18em;font-size:16px}
         .yamaha-line-carousel .carousel-accent{margin:18px auto 20px;height:5px}
         .yamaha-carousel-stage{aspect-ratio:16/9;min-height:0;border-radius:20px}
-        .yamaha-carousel-arrow{width:44px;height:78px;border-radius:20px;font-size:34px}
-        .yamaha-carousel-arrow.prev{left:7px}.yamaha-carousel-arrow.next{right:7px}
+        .yamaha-carousel-arrow{width:22%}
         .yamaha-carousel-dots{gap:13px;margin-top:20px}
         .yamaha-carousel-dot{width:18px;height:18px;border-width:3px}
         .yamaha-carousel-dot.active{box-shadow:0 0 0 5px rgba(44,150,255,.2)}
