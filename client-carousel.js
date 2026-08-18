@@ -5,10 +5,10 @@
   let timer = null;
   let current = 0;
   const slides = [
-    'assets/carousel-1.webp',
-    'assets/carousel-2.webp',
-    'assets/carousel-3.webp',
-    'assets/carousel-4.webp',
+    'assets/carousel-final-1.webp?v=20260817-2116',
+    'assets/carousel-final-2.webp?v=20260817-2116',
+    'assets/carousel-final-3.webp?v=20260817-2116',
+    'assets/carousel-final-4.webp?v=20260817-2116',
   ];
 
   function installStyles() {
