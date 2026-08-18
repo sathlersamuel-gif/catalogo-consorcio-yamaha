@@ -8,6 +8,7 @@
     'assets/carousel-final-1.webp?v=20260817-2125',
     'assets/carousel-final-2.webp?v=20260817-2125',
     'assets/carousel-final-4.webp?v=20260817-2125',
+    'assets/carousel-extra-5.webp?v=20260817-2145',
   ];
 
   function installStyles() {
