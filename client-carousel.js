@@ -5,10 +5,9 @@
   let timer = null;
   let current = 0;
   const slides = [
-    'assets/carousel-final-1.webp?v=20260817-2116',
-    'assets/carousel-final-2.webp?v=20260817-2116',
-    'assets/carousel-final-3.webp?v=20260817-2116',
-    'assets/carousel-final-4.webp?v=20260817-2116',
+    'assets/carousel-final-1.webp?v=20260817-2125',
+    'assets/carousel-final-2.webp?v=20260817-2125',
+    'assets/carousel-final-4.webp?v=20260817-2125',
   ];
 
   function installStyles() {
@@ -23,8 +22,6 @@
       .yamaha-carousel-slide{position:absolute;inset:0;opacity:0;transition:opacity .45s ease;pointer-events:none;border:0;padding:0;background:transparent;width:100%;height:100%}
       .yamaha-carousel-slide.active{opacity:1;pointer-events:auto}
       .yamaha-carousel-slide img{width:100%;height:100%;object-fit:cover;display:block}
-      .yamaha-carousel-arrow{position:absolute;top:0;bottom:0;z-index:4;width:18%;border:0;background:transparent;color:transparent;font-size:0;cursor:pointer;opacity:0}
-      .yamaha-carousel-arrow.prev{left:0}.yamaha-carousel-arrow.next{right:0}
       .yamaha-carousel-dots{display:flex;justify-content:center;gap:22px;margin-top:30px}
       .yamaha-carousel-dot{width:31px;height:31px;border-radius:50%;border:4px solid #4ba0fb;background:transparent;padding:0;cursor:pointer}
       .yamaha-carousel-dot.active{background:#2c96ff;box-shadow:0 0 0 8px rgba(44,150,255,.22)}
@@ -33,7 +30,6 @@
         .yamaha-line-carousel h2{letter-spacing:.18em;font-size:16px}
         .yamaha-line-carousel .carousel-accent{margin:18px auto 20px;height:5px}
         .yamaha-carousel-stage{aspect-ratio:16/9;min-height:0;border-radius:20px}
-        .yamaha-carousel-arrow{width:22%}
         .yamaha-carousel-dots{gap:13px;margin-top:20px}
         .yamaha-carousel-dot{width:18px;height:18px;border-width:3px}
         .yamaha-carousel-dot.active{box-shadow:0 0 0 5px rgba(44,150,255,.2)}
@@ -56,8 +52,6 @@
       <div class="carousel-accent"></div>
       <div class="yamaha-carousel-stage">
         ${slides.map((url, index) => `<div class="yamaha-carousel-slide ${index === 0 ? 'active' : ''}" data-carousel-slide="${index}"><img src="${url}" alt="Linha Yamaha ${index + 1}"></div>`).join('')}
-        <button type="button" class="yamaha-carousel-arrow prev" data-carousel-prev aria-label="Anterior">‹</button>
-        <button type="button" class="yamaha-carousel-arrow next" data-carousel-next aria-label="Próxima">›</button>
       </div>
       <div class="yamaha-carousel-dots">${slides.map((_, index) => `<button type="button" class="yamaha-carousel-dot ${index === 0 ? 'active' : ''}" data-carousel-dot="${index}" aria-label="Ir para imagem ${index + 1}"></button>`).join('')}</div>`;
     main.insertBefore(section, catalog);
@@ -77,10 +71,11 @@
   }
 
   app.addEventListener('click', (event) => {
-    if (event.target.closest('[data-carousel-prev]')) { show(current - 1); startTimer(); return; }
-    if (event.target.closest('[data-carousel-next]')) { show(current + 1); startTimer(); return; }
     const dot = event.target.closest('[data-carousel-dot]');
-    if (dot) { show(Number(dot.dataset.carouselDot)); startTimer(); }
+    if (dot) {
+      show(Number(dot.dataset.carouselDot));
+      startTimer();
+    }
   });
 
   new MutationObserver(renderCarousel).observe(app, { childList: true, subtree: true });
