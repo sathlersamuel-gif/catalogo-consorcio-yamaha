@@ -6,6 +6,10 @@
     return new URLSearchParams(location.hash.slice(1)).get('moto');
   }
 
+  function currentMotorId() {
+    return new URLSearchParams(location.hash.slice(1)).get('motor');
+  }
+
   function showToast(message) {
     const toast = document.getElementById('toast');
     if (!toast) return;
@@ -109,12 +113,50 @@
     card.appendChild(button);
   }
 
+  function enhanceOutboardShare(card) {
+    if (card.querySelector('[data-share-current-motor]')) return;
+    const motorId = currentMotorId();
+    if (!motorId) return;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'moto-share-button';
+    button.dataset.shareCurrentMotor = 'true';
+    button.textContent = '🔗 Compartilhar este motor';
+
+    button.addEventListener('click', async () => {
+      const url = new URL(location.href);
+      url.hash = `motor=${encodeURIComponent(motorId)}`;
+      const title = card.querySelector('h1')?.textContent?.trim() || 'Motor de Popa Yamaha';
+
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title,
+            text: `Veja o ${title}, fotos e planos de consórcio:`,
+            url: url.toString(),
+          });
+        } else if (navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url.toString());
+          showToast('Link deste motor copiado!');
+        } else {
+          window.prompt('Copie o link deste motor:', url.toString());
+        }
+      } catch (error) {
+        if (error?.name !== 'AbortError') window.prompt('Copie o link deste motor:', url.toString());
+      }
+    });
+
+    card.appendChild(button);
+  }
+
   function applyEnhancements() {
     installStyles();
     const card = app.querySelector('.detail-page .information-card');
     if (!card) return;
     enhanceDescription(card);
     enhanceShare(card);
+    enhanceOutboardShare(card);
   }
 
   new MutationObserver(applyEnhancements).observe(app, { childList: true, subtree: true });
