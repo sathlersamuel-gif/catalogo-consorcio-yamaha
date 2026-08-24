@@ -6,6 +6,11 @@
   let data = null;
   let selectedCategory = null;
 
+  function requestedMotoId() {
+    return new URLSearchParams(location.search).get('moto')
+      || new URLSearchParams(location.hash.slice(1)).get('moto');
+  }
+
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;',
   }[char]));
@@ -232,8 +237,8 @@
   async function start() {
     try {
       data = await api.getCatalog(false);
-      const motoFromHash = new URLSearchParams(location.hash.slice(1)).get('moto');
-      if (motoFromHash && data.motos.some((moto) => moto.id === motoFromHash)) renderMoto(motoFromHash);
+      const motoFromUrl = requestedMotoId();
+      if (motoFromUrl && data.motos.some((moto) => moto.id === motoFromUrl)) renderMoto(motoFromUrl);
       else renderHome();
     } catch (error) {
       app.innerHTML = `<main class="wrap"><div class="card error-state"><h1>Não foi possível carregar o catálogo</h1><p>${escapeHtml(error.message)}</p><button class="btn primary" onclick="location.reload()">Tentar novamente</button></div></main>`;

@@ -1,0 +1,64 @@
+{
+  "motos": [
+    {
+      "id": "bc8ca6cd-12f0-47cc-b51b-15d92a97abdb",
+      "name": "FACTOR"
+    },
+    {
+      "id": "ed63dba0-6a77-400a-b069-44a2e29eeb46",
+      "name": "FLUO ABS HYBRID CONNECTED"
+    },
+    {
+      "id": "b5f75169-0baa-48c0-aa36-445e502eb066",
+      "name": "FZ15 ABS CONNECTED"
+    },
+    {
+      "id": "2ce221a6-c6ae-4a90-a536-6439b971360a",
+      "name": "FZ25 CONNECTED"
+    },
+    {
+      "id": "3871601b-a98f-4e5b-9e81-602004c33dfe",
+      "name": "LANDER 250 CONNECTED"
+    },
+    {
+      "id": "c38aff53-47f4-4718-8816-68ea45734887",
+      "name": "MT-03 CONNECTED"
+    },
+    {
+      "id": "e08f54bf-184f-4c60-8be3-130df0757c1f",
+      "name": "MT-07 CONNECTED"
+    },
+    {
+      "id": "1bad260e-89cc-4492-b529-9823ec13be8e",
+      "name": "NEOS CONNECTED"
+    },
+    {
+      "id": "d10912a5-e286-4462-bddc-53b3ce5072d0",
+      "name": "TÉNÉRÉ 700"
+    },
+    {
+      "id": "66c58e1d-b945-4ea2-8097-e65431e2afa2",
+      "name": "TRACER 700 Cc"
+    },
+    {
+      "id": "ba422fba-6642-4f14-8f1f-be00ae87b97c",
+      "name": "XTZ CROSSER 150 ABS"
+    },
+    {
+      "id": "bbfa54bb-c0ea-480a-9919-0440ade9981c",
+      "name": "YZF-R15 ABS"
+    },
+    {
+      "id": "8d7ccb0f-ff3e-4835-8a21-bfbebbc9201b",
+      "name": "YZF-R3 CONNECTED "
+    },
+    {
+      "id": "8b5eb782-cbeb-4bb5-afc2-12d7c66e6356",
+      "name": "YZF-R7 EM BREVE"
+    },
+    {
+      "id": "2ecaa6fb-cb33-447c-9f50-70803eb6fb41",
+      "name": "ZR HYBRID CONNECTED"
+    }
+  ]
+}

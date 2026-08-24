@@ -1,12 +1,10 @@
 (function enableAdminMotoShare() {
-  const CATALOG_BASE = 'https://consorcio-yamaha-ro.sathlersamuel.chatgpt.site/';
+  const CATALOG_BASE = 'https://sathlersamuel-gif.github.io/catalogo-consorcio-yamaha/';
   const root = document.getElementById('adminRoot');
   if (!root) return;
 
   function motoUrl(motoId) {
-    const url = new URL(CATALOG_BASE);
-    url.hash = `moto=${encodeURIComponent(motoId)}`;
-    return url.toString();
+    return new URL(`share/moto/${encodeURIComponent(motoId)}/`, CATALOG_BASE).toString();
   }
 
   function installButtons() {

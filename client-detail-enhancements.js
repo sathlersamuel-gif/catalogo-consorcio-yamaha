@@ -3,7 +3,12 @@
   if (!app) return;
 
   function currentMotoId() {
-    return new URLSearchParams(location.hash.slice(1)).get('moto');
+    return new URLSearchParams(location.search).get('moto')
+      || new URLSearchParams(location.hash.slice(1)).get('moto');
+  }
+
+  function motoShareUrl(motoId) {
+    return new URL(`share/moto/${encodeURIComponent(motoId)}/`, `${location.origin}${location.pathname}`).toString();
   }
 
   function currentMotorId() {
@@ -88,8 +93,7 @@
     button.textContent = '🔗 Compartilhar esta moto';
 
     button.addEventListener('click', async () => {
-      const url = new URL(location.href);
-      url.hash = `moto=${encodeURIComponent(motoId)}`;
+      const url = motoShareUrl(motoId);
       const title = card.querySelector('h1')?.textContent?.trim() || 'Yamaha';
 
       try {
@@ -97,16 +101,16 @@
           await navigator.share({
             title,
             text: `Veja a ${title}, fotos e planos de consórcio:`,
-            url: url.toString(),
+            url,
           });
         } else if (navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(url.toString());
+          await navigator.clipboard.writeText(url);
           showToast('Link desta moto copiado!');
         } else {
-          window.prompt('Copie o link desta moto:', url.toString());
+          window.prompt('Copie o link desta moto:', url);
         }
       } catch (error) {
-        if (error?.name !== 'AbortError') window.prompt('Copie o link desta moto:', url.toString());
+        if (error?.name !== 'AbortError') window.prompt('Copie o link desta moto:', url);
       }
     });
 
