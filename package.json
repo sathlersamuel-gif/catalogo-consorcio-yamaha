@@ -8,6 +8,7 @@
     "check": "node --check api.js && node --check client.js && node --check admin.js && node --check config.js && node --check seed.js && npm test"
   },
   "devDependencies": {
-    "jsdom": "^26.1.0"
+    "jsdom": "^26.1.0",
+    "sharp": "^0.35.3"
   }
 }

@@ -30,3 +30,13 @@ for (const [id, name] of [
     assert.match(html, new RegExp(`\\?moto=${id}`));
   });
 }
+
+test('prévia da XMAX converte a foto WebP principal para JPEG compatível', async () => {
+  const id = 'e3016c81-372e-45c8-870d-6306cd002749';
+  const html = await readFile(new URL(`share/moto/${id}/index.html`, root), 'utf8');
+  assert.match(meta(html, 'og:title'), /XMAX 300 CONNECTED/);
+  assert.equal(meta(html, 'og:image'), `https://sathlersamuel-gif.github.io/catalogo-consorcio-yamaha/share/moto/${id}/preview.jpg`);
+  assert.equal(meta(html, 'og:image:type'), 'image/jpeg');
+  const image = await readFile(new URL(`share/moto/${id}/preview.jpg`, root));
+  assert.deepEqual([...image.subarray(0, 3)], [0xff, 0xd8, 0xff]);
+});

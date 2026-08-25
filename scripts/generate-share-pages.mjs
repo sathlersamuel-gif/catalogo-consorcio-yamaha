@@ -1,6 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const configSource = await readFile(join(root, 'config.js'), 'utf8');
@@ -12,8 +13,18 @@ const outputRoot = join(root, 'share', 'moto');
 if (!supabaseUrl || !publishableKey) throw new Error('Configuração pública do catálogo não encontrada.');
 
 const headers = { apikey: publishableKey };
+async function fetchWithRetry(url, options = {}, attempts = 3) {
+  let response;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    response = await fetch(url, options);
+    if (response.ok || response.status < 500 || attempt === attempts) return response;
+    await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+  }
+  return response;
+}
+
 async function table(name, query) {
-  const response = await fetch(`${supabaseUrl}/rest/v1/${name}?${query}`, { headers });
+  const response = await fetchWithRetry(`${supabaseUrl}/rest/v1/${name}?${query}`, { headers });
   if (!response.ok) throw new Error(`Falha ao carregar ${name}: ${response.status}`);
   return response.json();
 }
@@ -39,11 +50,30 @@ function primaryPhoto(motoId) {
     .sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || Number(a.sort_order) - Number(b.sort_order))[0]?.url;
 }
 
-function pageFor(moto) {
+async function previewImageFor(moto, directory) {
+  const source = primaryPhoto(moto.id);
+  if (!source) return { url: `${catalogUrl}assets/consorcio-yamaha-share.jpg`, type: 'image/jpeg' };
+  if (!/\.(?:webp|avif)(?:$|\?)/i.test(source)) {
+    return { url: source, type: /\.png(?:$|\?)/i.test(source) ? 'image/png' : 'image/jpeg' };
+  }
+
+  const response = await fetchWithRetry(source);
+  if (!response.ok) throw new Error(`Falha ao preparar a foto de ${moto.name}: ${response.status}`);
+  await sharp(Buffer.from(await response.arrayBuffer()))
+    .rotate()
+    .resize(1200, 630, { fit: 'contain', background: '#ffffff' })
+    .jpeg({ quality: 88, mozjpeg: true })
+    .toFile(join(directory, 'preview.jpg'));
+  return {
+    url: `${catalogUrl}share/moto/${encodeURIComponent(moto.id)}/preview.jpg`,
+    type: 'image/jpeg',
+  };
+}
+
+function pageFor(moto, image) {
   const name = String(moto.name).trim();
   const title = `${name}${moto.year_model ? ` ${moto.year_model}` : ''} | Consórcio Yamaha`;
   const description = descriptionFor(moto);
-  const image = primaryPhoto(moto.id) || `${catalogUrl}assets/consorcio-yamaha-share.jpg`;
   const canonical = `${catalogUrl}share/moto/${encodeURIComponent(moto.id)}/`;
   const destination = `${catalogUrl}?moto=${encodeURIComponent(moto.id)}`;
   return `<!doctype html>
@@ -53,10 +83,10 @@ function pageFor(moto) {
 <meta name="description" content="${escapeHtml(description)}">
 <meta property="og:type" content="website"><meta property="og:site_name" content="Consórcio Yamaha • Samuel">
 <meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}">
-<meta property="og:url" content="${escapeHtml(canonical)}"><meta property="og:image" content="${escapeHtml(image)}">
-<meta property="og:image:secure_url" content="${escapeHtml(image)}"><meta property="og:image:alt" content="${escapeHtml(name)}">
+<meta property="og:url" content="${escapeHtml(canonical)}"><meta property="og:image" content="${escapeHtml(image.url)}">
+<meta property="og:image:secure_url" content="${escapeHtml(image.url)}"><meta property="og:image:type" content="${image.type}"><meta property="og:image:alt" content="${escapeHtml(name)}">
 <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escapeHtml(title)}">
-<meta name="twitter:description" content="${escapeHtml(description)}"><meta name="twitter:image" content="${escapeHtml(image)}">
+<meta name="twitter:description" content="${escapeHtml(description)}"><meta name="twitter:image" content="${escapeHtml(image.url)}">
 <link rel="canonical" href="${escapeHtml(canonical)}"><meta http-equiv="refresh" content="0;url=${escapeHtml(destination)}">
 <script>location.replace(${JSON.stringify(destination)});</script>
 </head><body><p>Abrindo ${escapeHtml(name)} no Catálogo Consórcio Yamaha…</p><a href="${escapeHtml(destination)}">Continuar</a></body></html>\n`;
@@ -67,7 +97,8 @@ await mkdir(outputRoot, { recursive: true });
 for (const moto of motos) {
   const directory = join(outputRoot, moto.id);
   await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, 'index.html'), pageFor(moto));
+  const image = await previewImageFor(moto, directory);
+  await writeFile(join(directory, 'index.html'), pageFor(moto, image));
 }
 await writeFile(join(outputRoot, 'manifest.json'), `${JSON.stringify({ motos: motos.map(({ id, name }) => ({ id, name })) }, null, 2)}\n`);
 console.log(`${motos.length} prévias de motos geradas.`);
