@@ -1,10 +1,18 @@
 (function enableAdminMotoShare() {
   const CATALOG_BASE = 'https://sathlersamuel-gif.github.io/catalogo-consorcio-yamaha/';
+  const REFRESHED_PREVIEW_IDS = new Set([
+    'b5f75169-0baa-48c0-aa36-445e502eb066', '2ce221a6-c6ae-4a90-a536-6439b971360a',
+    'c38aff53-47f4-4718-8816-68ea45734887', 'e08f54bf-184f-4c60-8be3-130df0757c1f',
+    '66c58e1d-b945-4ea2-8097-e65431e2afa2', 'ba422fba-6642-4f14-8f1f-be00ae87b97c',
+    'bbfa54bb-c0ea-480a-9919-0440ade9981c', '8d7ccb0f-ff3e-4835-8a21-bfbebbc9201b',
+  ]);
   const root = document.getElementById('adminRoot');
   if (!root) return;
 
   function motoUrl(motoId) {
-    return new URL(`share/moto/${encodeURIComponent(motoId)}/`, CATALOG_BASE).toString();
+    const url = new URL(`share/moto/${encodeURIComponent(motoId)}/`, CATALOG_BASE);
+    if (REFRESHED_PREVIEW_IDS.has(motoId)) url.searchParams.set('v', '2');
+    return url.toString();
   }
 
   function installButtons() {

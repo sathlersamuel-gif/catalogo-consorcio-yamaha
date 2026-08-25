@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
@@ -9,6 +9,16 @@ const supabaseUrl = configSource.match(/supabaseUrl:\s*'([^']+)'/)?.[1];
 const publishableKey = configSource.match(/supabasePublishableKey:\s*'([^']+)'/)?.[1];
 const catalogUrl = 'https://sathlersamuel-gif.github.io/catalogo-consorcio-yamaha/';
 const outputRoot = join(root, 'share', 'moto');
+const forcedLocalPreviewIds = new Set([
+  'b5f75169-0baa-48c0-aa36-445e502eb066',
+  '2ce221a6-c6ae-4a90-a536-6439b971360a',
+  'c38aff53-47f4-4718-8816-68ea45734887',
+  'e08f54bf-184f-4c60-8be3-130df0757c1f',
+  '66c58e1d-b945-4ea2-8097-e65431e2afa2',
+  'ba422fba-6642-4f14-8f1f-be00ae87b97c',
+  'bbfa54bb-c0ea-480a-9919-0440ade9981c',
+  '8d7ccb0f-ff3e-4835-8a21-bfbebbc9201b',
+]);
 
 if (!supabaseUrl || !publishableKey) throw new Error('Configuração pública do catálogo não encontrada.');
 
@@ -34,6 +44,17 @@ const [motos, photos] = await Promise.all([
   table('moto_photos', 'select=moto_id,url,is_primary,sort_order&order=sort_order.asc'),
 ]);
 
+const previousManifest = await readFile(join(outputRoot, 'manifest.json'), 'utf8')
+  .then((content) => JSON.parse(content).motos || [])
+  .catch(() => []);
+const previousMotoIds = new Set(previousManifest.map(({ id }) => id));
+const previousLocalPreviewIds = new Set();
+await Promise.all(previousManifest.map(async ({ id }) => {
+  await access(join(outputRoot, id, 'preview.jpg'))
+    .then(() => previousLocalPreviewIds.add(id))
+    .catch(() => {});
+}));
+
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;',
 }[char]));
@@ -53,7 +74,11 @@ function primaryPhoto(motoId) {
 async function previewImageFor(moto, directory) {
   const source = primaryPhoto(moto.id);
   if (!source) return { url: `${catalogUrl}assets/consorcio-yamaha-share.jpg`, type: 'image/jpeg' };
-  if (!/\.(?:webp|avif)(?:$|\?)/i.test(source)) {
+  const needsLocalPreview = /\.(?:webp|avif)(?:$|\?)/i.test(source)
+    || forcedLocalPreviewIds.has(moto.id)
+    || previousLocalPreviewIds.has(moto.id)
+    || !previousMotoIds.has(moto.id);
+  if (!needsLocalPreview) {
     return { url: source, type: /\.png(?:$|\?)/i.test(source) ? 'image/png' : 'image/jpeg' };
   }
 
